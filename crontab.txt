@@ -1,0 +1,10 @@
+Acessar cron:
+
+sudo crontab -e
+
+Tasks:
+
+@reboot sudo python /home/pi/Desktop/monster.py&
+@reboot sudo python /home/pi/Desktop/programa.py&
+@reboot sudo python /home/pi/Desktop/lora2.py&
+@reboot sudo python /home/pi/Desktop/lora.py&
