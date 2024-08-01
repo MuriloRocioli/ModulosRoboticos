@@ -42,14 +42,24 @@ int16_t rssi,rxSize;
 
 bool lora_idle = true;
 
-#define ACTION_PIN 12
+#define MOTOR_PIN1 23
+#define MOTOR_PIN2 13
+#define AUTOMACAO_PIN1 2
+#define AUTOMACAO_PIN2 17
 
 void setup() {
     Serial.begin(115200);
     Mcu.begin(HELTEC_BOARD,SLOW_CLK_TPYE);
 
-    pinMode(ACTION_PIN, OUTPUT);
-    digitalWrite(ACTION_PIN, LOW);
+    pinMode(MOTOR_PIN1, OUTPUT);
+    pinMode(MOTOR_PIN2, OUTPUT);
+    pinMode(AUTOMACAO_PIN1, OUTPUT);
+    pinMode(AUTOMACAO_PIN2, OUTPUT);
+
+    digitalWrite(MOTOR_PIN1, LOW);
+    digitalWrite(MOTOR_PIN2, LOW);
+    digitalWrite(AUTOMACAO_PIN1, LOW);
+    digitalWrite(AUTOMACAO_PIN2, LOW);
     
     txNumber=0;
     rssi=0;
@@ -85,12 +95,45 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     Radio.Sleep( );
     Serial.printf("\r\nreceived packet \"%s\" with rssi %d , length %d\r\n",rxpacket,rssi,rxSize);
     
-    if (strcmp(rxpacket, "COMMAND:ACTIVATE 1") == 0) {
-        digitalWrite(ACTION_PIN, HIGH); // Activate action
-        Serial.printf("Acionado");
-    } else if (strcmp(rxpacket, "COMMAND:DEACTIVATE") == 0) {
-        digitalWrite(ACTION_PIN, LOW); // Deactivate action
+    if (strcmp(rxpacket, "Comando: Recuar") == 0) {
+        digitalWrite(MOTOR_PIN1, HIGH);
+        digitalWrite(MOTOR_PIN2, LOW);
+
+        delay(1000);
+
+        digitalWrite(MOTOR_PIN1, LOW);
+        digitalWrite(MOTOR_PIN2, LOW);
+
+        Serial.printf("Recuando \n");
     }
+
+    if (strcmp(rxpacket, "Comando: Avancar") == 0) {
+        digitalWrite(MOTOR_PIN1, LOW);
+        digitalWrite(MOTOR_PIN2, HIGH);
+
+        delay(1000);
+
+        digitalWrite(MOTOR_PIN1, LOW);
+        digitalWrite(MOTOR_PIN2, LOW);
+        Serial.printf("Avancando \n");
+    }
+
+    if (strcmp(rxpacket, "Comando: Automacao") == 0) {
+        digitalWrite(AUTOMACAO_PIN1, HIGH);
+        digitalWrite(AUTOMACAO_PIN2, LOW);
+
+        delay(1000);
+
+        digitalWrite(AUTOMACAO_PIN1, LOW);
+        digitalWrite(AUTOMACAO_PIN2, HIGH);
+
+        delay(1000);
+
+        digitalWrite(AUTOMACAO_PIN1, LOW);
+        digitalWrite(AUTOMACAO_PIN2, LOW);
+
+        Serial.printf("Automacao \n");  
+    }  
     
     lora_idle = true;
 }

@@ -7,6 +7,8 @@
 
 #include "LoRaWan_APP.h"
 #include "Arduino.h"
+#include <Wire.h>  
+#include "HT_SSD1306Wire.h"
 
 
 #define RF_FREQUENCY                                915000000 // Hz
@@ -39,19 +41,31 @@ double txNumber;
 bool lora_idle=true;
 
 // Definições dos pinos dos botões
-#define BUTTON_PIN 12
-#define BUTTON_PIN2 17
+#define BUTTON_RECUAR 23
+#define BUTTON_AVANCAR 2
+#define BUTTON_AUTOMACAO 17
 
 static RadioEvents_t RadioEvents;
 void OnTxDone( void );
 void OnTxTimeout( void );
 
+SSD1306Wire  factory_display(0x3c, 500000, SDA_OLED, SCL_OLED, GEOMETRY_128_64, RST_OLED); // addr , freq , i2c group , resolution , rst
+
 void setup() {
     Serial.begin(115200);
     Mcu.begin(HELTEC_BOARD,SLOW_CLK_TPYE);
 
-     pinMode(BUTTON_PIN, INPUT_PULLUP);
-     pinMode(BUTTON_PIN2, INPUT_PULLUP);
+    factory_display.init();
+	  factory_display.clear();
+	  factory_display.display();
+    factory_display.drawString(0, 10, "CELESC UFU");
+    factory_display.drawString(0, 20, "Robo Remoção Detritos");
+	  delay(300);
+	  factory_display.clear();
+
+     pinMode(BUTTON_RECUAR, INPUT_PULLUP);
+     pinMode(BUTTON_AVANCAR, INPUT_PULLUP);
+     pinMode(BUTTON_AUTOMACAO, INPUT_PULLUP);
 	
     txNumber=0;
 
@@ -73,19 +87,27 @@ void loop()
 	if (lora_idle == true) {
         delay(1000);
         
-        int buttonState = digitalRead(BUTTON_PIN);
-        int buttonState2 = digitalRead(BUTTON_PIN2);
-        if (buttonState == LOW) { // Assuming button is pressed when LOW
-            sprintf(txpacket, "COMMAND:ACTIVATE 1");
-        } else {
-            sprintf(txpacket, "COMMAND:DEACTIVATE");
-        }
+        int buttonState1 = digitalRead(BUTTON_RECUAR);
+        int buttonState2 = digitalRead(BUTTON_AVANCAR);
+        int buttonState3 = digitalRead(BUTTON_AUTOMACAO);
+
+        if (buttonState1 == LOW) { // Assuming button is pressed when LOW
+            sprintf(txpacket, "Comando: Recuar");
+        } 
 
         if (buttonState2 == LOW) { // Assuming button is pressed when LOW
-            sprintf(txpacket, "COMMAND:ACTIVATE 2");
+            sprintf(txpacket, "Comando: Avancar");
+        } 
+
+        if (buttonState3 == LOW) { // Assuming button is pressed when LOW
+            sprintf(txpacket, "Comando: Automacao");
         } 
 
         Serial.printf("\r\nSending packet \"%s\" , length %d\r\n", txpacket, strlen(txpacket));
+        factory_display.drawString(0, 10, txpacket);
+        factory_display.display();
+        delay(10);
+        factory_display.clear();
         Radio.Send((uint8_t *)txpacket, strlen(txpacket)); // Send the package out    
         lora_idle = false;
     }
