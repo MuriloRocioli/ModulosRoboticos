@@ -85,7 +85,7 @@ void setup() {
 void loop()
 {
 	if (lora_idle == true) {
-        delay(1000);
+        delay(500);
         
         int buttonState1 = digitalRead(BUTTON_RECUAR);
         int buttonState2 = digitalRead(BUTTON_AVANCAR);
@@ -93,7 +93,9 @@ void loop()
 
         if (buttonState1 == LOW) { // Assuming button is pressed when LOW
             sprintf(txpacket, "Comando: Recuar");
-        } 
+        } else {
+            sprintf(txpacket, "Aguardando...");
+        }
 
         if (buttonState2 == LOW) { // Assuming button is pressed when LOW
             sprintf(txpacket, "Comando: Avancar");

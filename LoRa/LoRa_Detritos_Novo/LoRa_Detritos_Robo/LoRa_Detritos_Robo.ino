@@ -47,6 +47,9 @@ bool lora_idle = true;
 #define AUTOMACAO_PIN1 2
 #define AUTOMACAO_PIN2 17
 
+bool com_recuar = 0;
+bool com_avancar = 0;
+
 void setup() {
     Serial.begin(115200);
     Mcu.begin(HELTEC_BOARD,SLOW_CLK_TPYE);
@@ -84,6 +87,28 @@ void loop()
     Radio.Rx(0);
   }
   Radio.IrqProcess( );
+
+  //Inserção dos comandos de avanço e recuo dos motores
+  // Avanço
+  if (com_avancar == 1) {
+    digitalWrite(MOTOR_PIN1, LOW);
+    digitalWrite(MOTOR_PIN2, HIGH);
+
+    Serial.printf("Avancando \n");
+  }
+
+  //Recuo
+  if (com_recuar == 1) {
+    digitalWrite(MOTOR_PIN1, HIGH);
+    digitalWrite(MOTOR_PIN2, LOW);
+
+    Serial.printf("Recuando \n");
+  }
+
+  if(com_recuar == 0 && com_avancar == 0){
+    digitalWrite(MOTOR_PIN1, LOW);
+    digitalWrite(MOTOR_PIN2, LOW);
+  }
 }
 
 void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
@@ -96,38 +121,29 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     Serial.printf("\r\nreceived packet \"%s\" with rssi %d , length %d\r\n",rxpacket,rssi,rxSize);
     
     if (strcmp(rxpacket, "Comando: Recuar") == 0) {
-        digitalWrite(MOTOR_PIN1, HIGH);
-        digitalWrite(MOTOR_PIN2, LOW);
-
-        delay(1000);
-
-        digitalWrite(MOTOR_PIN1, LOW);
-        digitalWrite(MOTOR_PIN2, LOW);
-
-        Serial.printf("Recuando \n");
+      com_recuar = 1;
+    }
+    else{
+      com_recuar = 0;
     }
 
     if (strcmp(rxpacket, "Comando: Avancar") == 0) {
-        digitalWrite(MOTOR_PIN1, LOW);
-        digitalWrite(MOTOR_PIN2, HIGH);
-
-        delay(1000);
-
-        digitalWrite(MOTOR_PIN1, LOW);
-        digitalWrite(MOTOR_PIN2, LOW);
-        Serial.printf("Avancando \n");
+      com_avancar = 1;
+    }
+    else{
+      com_avancar = 0;
     }
 
     if (strcmp(rxpacket, "Comando: Automacao") == 0) {
         digitalWrite(AUTOMACAO_PIN1, HIGH);
         digitalWrite(AUTOMACAO_PIN2, LOW);
 
-        delay(1000);
+        delay(2500);
 
         digitalWrite(AUTOMACAO_PIN1, LOW);
         digitalWrite(AUTOMACAO_PIN2, HIGH);
 
-        delay(1000);
+        delay(2250);
 
         digitalWrite(AUTOMACAO_PIN1, LOW);
         digitalWrite(AUTOMACAO_PIN2, LOW);
