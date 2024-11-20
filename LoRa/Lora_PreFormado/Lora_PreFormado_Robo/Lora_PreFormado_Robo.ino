@@ -210,8 +210,11 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
         Serial.printf("Avancar \n");  
     } 
 
-    else if (strcmp(rxpacket, "Aguardando...") == 0) {
-        
+    //Robô não faz nada
+    else if (strcmp(rxpacket, "0") == 0) {
+        analogWrite(MOTOR_A_PIN1, 0);
+        analogWrite(MOTOR_A_PIN2, 0);
+
         Serial.printf("Aguardando...\n");  
     } 
 
@@ -233,10 +236,16 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 void controlMotor(int pwmValue) {
     if (pwmValue >= 30 && pwmValue <= 255) {
         // Avançar
+        Serial.print("Avançando: ");
+        Serial.println(pwmValue);
+
         analogWrite(MOTOR_A_PIN1, pwmValue);
         analogWrite(MOTOR_A_PIN2, 0);
     } else if (pwmValue <= -30 && pwmValue >= -255) {
         // Recuar
+        Serial.print("Avançando: ");
+        Serial.println(abs(pwmValue));
+
         analogWrite(MOTOR_A_PIN1, 0);
         analogWrite(MOTOR_A_PIN2, abs(pwmValue));
     } else {

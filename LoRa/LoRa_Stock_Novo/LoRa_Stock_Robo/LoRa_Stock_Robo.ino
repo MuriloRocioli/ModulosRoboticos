@@ -42,17 +42,25 @@ int16_t rssi,rxSize;
 
 bool lora_idle = true;
 
+//Motor translação motorredutor
 #define MOTOR_A_PIN1 23
 #define MOTOR_A_PIN2 17
 
+//Motor translação amortecedor
 #define MOTOR_B_PIN1 0
 #define MOTOR_B_PIN2 22
 
+//Motorredutor
 #define MOTOR_C_PIN1 12
 #define MOTOR_C_PIN2 13
 
-#define MOTOR_D_PIN1 34
+//Motor pinças
+#define MOTOR_D_PIN1 33
 #define MOTOR_D_PIN2 35
+
+//Motor movimentação
+#define MOTOR_E_PIN1 1
+#define MOTOR_E_PIN2 3
 
 
 
@@ -74,6 +82,9 @@ void setup() {
 
     pinMode(MOTOR_D_PIN1, OUTPUT);
     pinMode(MOTOR_D_PIN2, OUTPUT);
+
+    pinMode(MOTOR_E_PIN1, OUTPUT);
+    pinMode(MOTOR_E_PIN2, OUTPUT);
     
     digitalWrite(MOTOR_A_PIN1, LOW);
     digitalWrite(MOTOR_A_PIN2, LOW);
@@ -86,6 +97,9 @@ void setup() {
 
     digitalWrite(MOTOR_D_PIN1, LOW);
     digitalWrite(MOTOR_D_PIN2, LOW);
+
+    digitalWrite(MOTOR_E_PIN1, LOW);
+    digitalWrite(MOTOR_E_PIN2, LOW);
     
     txNumber=0;
     rssi=0;
@@ -180,7 +194,7 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
         digitalWrite(MOTOR_A_PIN1, HIGH);
         digitalWrite(MOTOR_A_PIN2, LOW);
 
-        delay(10000);
+        delay(5000);
 
         digitalWrite(MOTOR_A_PIN1, LOW);
         digitalWrite(MOTOR_A_PIN2, LOW);
@@ -190,7 +204,7 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
         digitalWrite(MOTOR_B_PIN1, HIGH);
         digitalWrite(MOTOR_B_PIN2, LOW);
 
-        delay(10000);
+        delay(3000);
 
         digitalWrite(MOTOR_B_PIN1, LOW);
         digitalWrite(MOTOR_B_PIN2, LOW);
@@ -221,7 +235,7 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
         digitalWrite(MOTOR_A_PIN1, LOW);
         digitalWrite(MOTOR_A_PIN2, HIGH);
 
-        delay(10000);
+        delay(5000);
 
         digitalWrite(MOTOR_A_PIN1, LOW);
         digitalWrite(MOTOR_A_PIN2, LOW);
@@ -231,7 +245,7 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
         digitalWrite(MOTOR_B_PIN1, LOW);
         digitalWrite(MOTOR_B_PIN2, HIGH);
 
-        delay(5000);
+        delay(3000);
 
         digitalWrite(MOTOR_B_PIN1, LOW);
         digitalWrite(MOTOR_B_PIN2, LOW);
@@ -257,7 +271,33 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
         digitalWrite(MOTOR_D_PIN2, LOW);
 
         Serial.printf("Automacao \n");  
-    }  
+    } 
+
+    //Avancar
+    if (strcmp(rxpacket, "B") == 0) {
+        digitalWrite(MOTOR_E_PIN1, HIGH);
+        digitalWrite(MOTOR_E_PIN2, LOW);
+
+        delay(1000);
+
+        digitalWrite(MOTOR_E_PIN1, LOW);
+        digitalWrite(MOTOR_E_PIN2, LOW);
+
+        Serial.printf("Avancar \n");  
+    }
+    
+    if (strcmp(rxpacket, "D") == 0) {
+        digitalWrite(MOTOR_E_PIN1, LOW);
+        digitalWrite(MOTOR_E_PIN2, HIGH);
+
+        delay(1000);
+
+        digitalWrite(MOTOR_E_PIN1, LOW);
+        digitalWrite(MOTOR_E_PIN2, LOW);
+
+        Serial.printf("Avancar \n");  
+    } 
+    
     
     lora_idle = true;
 }

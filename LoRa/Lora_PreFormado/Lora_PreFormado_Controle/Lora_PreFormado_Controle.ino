@@ -42,6 +42,16 @@ void OnTxDone( void );
 void OnTxTimeout( void );
 void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr );
 
+typedef enum
+{
+    LOWPOWER,
+    STATE_RX,
+    STATE_TX
+}States_t;
+
+States_t state;
+bool sleepMode = false;
+
 int16_t txNumber;
 int16_t Rssi,rxSize;
 bool lora_idle=true;
@@ -143,6 +153,7 @@ void loop() {
 
         // Tratar os valores do joystick
         int pwmValueX = 0;
+        int lastPwmValueX = 0; // Variável para armazenar o último valor enviado
 
         Serial.print("X:");
         Serial.print(analogRead(PIN_ANALOG_X));
@@ -150,33 +161,70 @@ void loop() {
 
         // Mapear o joystick X (controle para frente e para trás)
         pwmValueX = joystickX*510/2700 - 255;
-        sprintf(txpacket, "%d",pwmValueX);
+
+         // Verificar mudanças no joystick
+        bool hasJoystickChanged = (abs(pwmValueX - lastPwmValueX) > 10); // Tolerância de 10 para evitar ruídos
+        
+        
+        //sprintf(txpacket, "%d",pwmValueX);
         Serial.print("Pwm:");
         Serial.print(pwmValueX);
         Serial.print(" ");
 
         if (buttonStateA == LOW) {
             sprintf(txpacket, "A");
-        } else {
-            //sprintf(txpacket, "Aguardando...");
-            sprintf(txpacket, "%d",pwmValueX);
+            lastPwmValueX = pwmValueX; // Atualizar para evitar redundância
         }
         
-        if (buttonStateB == LOW) {
+        else if (buttonStateB == LOW) {
             sprintf(txpacket, "B");
+            lastPwmValueX = pwmValueX; // Atualizar para evitar redundância
         }
 
-        if (buttonStateC == LOW) {
+        else if (buttonStateC == LOW) {
             sprintf(txpacket, "C");
+            lastPwmValueX = pwmValueX; // Atualizar para evitar redundância
         }
 
-        if (buttonStateD == LOW) {
+        else if (buttonStateD == LOW) {
             sprintf(txpacket, "D");
+            lastPwmValueX = pwmValueX; // Atualizar para evitar redundância
+        }
+
+        else if (hasJoystickChanged && joystickX < 1100) {
+            factory_display.drawString(0, 15, "Recuando");
+            factory_display.display();
+
+            sprintf(txpacket, "%d",pwmValueX);
+
+            lastPwmValueX = pwmValueX; // Atualizar o último valor enviado
+        }
+
+        else if (hasJoystickChanged && joystickX > 1400) {
+            factory_display.drawString(0, 15, "Avançando");
+            factory_display.display();
+
+            sprintf(txpacket, "%d",pwmValueX);
+
+            lastPwmValueX = pwmValueX;
+        }
+
+        else if (hasJoystickChanged){
+            factory_display.drawString(0, 15, "Aguardando...");
+            factory_display.display();
+
+            sprintf(txpacket, "0"); // Envie "0" para sinalizar parada, se necessário
+            lastPwmValueX = pwmValueX;
+
+            //sprintf(txpacket, "");
+        } else {
+            // Não faça nada se não houve mudanças
+            return;
         }
         
 
         Serial.printf("\r\nSending packet \"%s\" , length %d\r\n", txpacket, strlen(txpacket));
-        factory_display.drawString(0, 10, txpacket);
+        factory_display.drawString(0, 30, txpacket);
         factory_display.display();
         delay(10);
         factory_display.clear();
@@ -210,6 +258,18 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 
     Serial.printf("\r\nreceived packet \"%s\" with Rssi %d , length %d\r\n",rxpacket,Rssi,rxSize);
     Serial.println("wait to send next packet");
+
+    if (strcmp(rxpacket, "Eletroima Ativado") == 0) {
+      factory_display.drawString(0, 40, rxpacket);
+      factory_display.display();
+    }
+
+    else if (strcmp(rxpacket, "Eletroima Desativado") == 0) {
+      factory_display.drawString(0, 40, rxpacket);
+      factory_display.display();
+    }
+    //factory_display.drawString(0, 50, rxpacket);
+    //factory_display.display();
 
     //state=STATE_TX;
 }
